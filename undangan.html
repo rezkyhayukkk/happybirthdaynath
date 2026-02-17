@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday! 🎂</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-pink: #ff6b6b;
+            --soft-gold: #ffd93d;
+            --bg-color: #fff5f5;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            color: #333;
+        }
+
+        /* --- Header & Personalized Message --- */
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 3.5rem;
+            color: var(--primary-pink);
+            margin-bottom: 10px;
+        }
+
+        .personal-message {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            max-width: 600px;
+            margin: 0 auto;
+            color: #555;
+        }
+
+        /* --- Music Player --- */
+        .music-container {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- Interactive Candle --- */
+        .cake-section {
+            text-align: center;
+            margin: 40px 0;
+            cursor: pointer;
+        }
+
+        .candle {
+            width: 30px;
+            height: 100px;
+            background: #ffd93d;
+            margin: 0 auto;
+            position: relative;
+            border-radius: 5px;
+        }
+
+        .flame {
+            width: 20px;
+            height: 35px;
+            background: radial-gradient(#fff, #ffa500, #ff4500);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: absolute;
+            top: -40px;
+            left: 5px;
+            animation: flicker 0.1s infinite alternate;
+        }
+
+        @keyframes flicker {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        .hidden-surprise {
+            display: none;
+            font-weight: bold;
+            color: var(--primary-pink);
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+
+        /* --- Guestbook & Gallery --- */
+        .section-container {
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .sticker-btn {
+            background: #eee;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        #gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        #gallery img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1 id="bday-title">Happy Birthday Nathasya!</h1>
+        <p class="personal-message">To someone who makes the world brighter just by being in it. May your year be filled with laughter and endless joy!</p>
+    </div>
+
+    <div class="music-container">
+        <span>🎵 Now Playing: Happy Birthday</span>
+        <audio id="bg-music" loop>
+    <source src="Happy_Birthday_To_You_-_THE_KIBOOMERS_Birthday_Party_Song_for_Kids_128k.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+        <button onclick="toggleMusic()" id="music-btn">Play Music</button>
+    </div>
+
+    <div class="cake-section" onclick="blowCandle()">
+        <div class="candle">
+            <div class="flame" id="flame"></div>
+        </div>
+        <p>Click the candle to "blow" it out!</p>
+        <div id="surprise" class="hidden-surprise">
+            ✨ SURPRISE! You are loved by so many people! ✨
+        </div>
+    </div>
+
+    <div class="section-container">
+        <h3>📝 Digital Guestbook</h3>
+        <input type="text" id="guestName" placeholder="Your Name">
+        <textarea id="guestMessage" placeholder="Leave a wish..."></textarea>
+        <div>
+            <span>Add a sticker: </span>
+            <button class="sticker-btn" onclick="addSticker('⭐')">⭐</button>
+            <button class="sticker-btn" onclick="addSticker('🎈')">🎈</button>
+            <button class="sticker-btn" onclick="addSticker('🍰')">🍰</button>
+        </div>
+        <button onclick="postWish()" style="margin-top: 10px;">Send Wishes</button>
+        <div id="guestbook-list"></div>
+    </div>
+
+    <script>
+        // 1. Confetti Launch
+        window.onload = () => {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff6b6b', '#ffd93d', '#4ecdc4']
+            });
+        };
+
+        // 2. Music Player
+        const music = document.getElementById('bg-music');
+        const btn = document.getElementById('music-btn');
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                btn.innerText = "Pause Music";
+            } else {
+                music.pause();
+                btn.innerText = "Play Music";
+            }
+        }
+
+        // 3. Blow Out Candle
+        function blowCandle() {
+            document.getElementById('flame').style.display = 'none';
+            document.getElementById('surprise').style.display = 'block';
+            confetti({
+                particleCount: 100,
+                velocity: 30,
+                spread: 360,
+                origin: { y: 0.5 }
+            });
+        }
+
+        // 4. Memory Gallery
+        function uploadImage() {
+            const input = document.getElementById('imageInput');
+            const gallery = document.getElementById('gallery');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    gallery.appendChild(img);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 5. Guestbook
+        let selectedSticker = '';
+        function addSticker(s) { selectedSticker = s; }
+
+        function postWish() {
+            const name = document.getElementById('guestName').value;
+            const msg = document.getElementById('guestMessage').value;
+            const list = document.getElementById('guestbook-list');
+            
+            if(name && msg) {
+                const entry = document.createElement('div');
+                entry.style.borderBottom = "1px solid #eee";
+                entry.style.padding = "10px 0";
+                entry.innerHTML = `<strong>${name} ${selectedSticker}</strong>: ${msg}`;
+                list.prepend(entry);
+                
+                // Reset fields
+                document.getElementById('guestName').value = '';
+                document.getElementById('guestMessage').value = '';
+                selectedSticker = '';
+            }
+        }
+    </script>
+</body>
+</html>
